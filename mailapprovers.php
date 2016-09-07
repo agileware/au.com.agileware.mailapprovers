@@ -18,7 +18,6 @@ function mailapprovers_civicrm_config(&$config) {
     if (!(CRM_Core_Config::singleton()->userPermissionTemp)) {
       CRM_Core_Config::singleton()->userPermissionTemp = new CRM_Mailapprovers_Permission($arg);
     }
-    CRM_Core_Session::setStatus(kpr(CRM_Core_Config::singleton()->userPermissionTemp, TRUE));
   }
 }
 
