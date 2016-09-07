@@ -2,6 +2,8 @@
 
 require_once 'mailapprovers.civix.php';
 
+define('ACL_GROUP_TYPE', 1);
+
 /**
  * Implements hook_civicrm_config().
  *
@@ -13,10 +15,8 @@ function mailapprovers_civicrm_config(&$config) {
   $arg = explode('/', $_GET[$config->userFrameworkURLVar]);
 
   if (isset($arg[1]) && ('mailing' == $arg[1])) {
-    CRM_Core_Session::setStatus('I am a mailing path!');
     if (!(CRM_Core_Config::singleton()->userPermissionTemp)) {
-      CRM_Core_Session::setStatus('Install Permission Class', CRM_Mailapprovers_Permission);
-      CRM_Core_Config::singleton()->userPermissionTemp = new CRM_Mailapprovers_Permission();
+      CRM_Core_Config::singleton()->userPermissionTemp = new CRM_Mailapprovers_Permission($arg);
     }
     CRM_Core_Session::setStatus(kpr(CRM_Core_Config::singleton()->userPermissionTemp, TRUE));
   }
@@ -144,17 +144,19 @@ function mailapprovers_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
  */
 function mailapprovers_civicrm_buildForm($formName, &$form) {
   if (('CRM_Admin_Form_Options' == $formName) && !empty($form->urlPath[3]) && ('from_email_address' == $form->urlPath[3])) {
+    // Fetch a list of Groups.
     $groups = civicrm_api3('Group', 'get', array('options' => array('limit' => 0)));
 
     $groupOpt = array();
 
-    // Only use ACL groups.
+    // Only use ACL groups.  Filtering by group type in the API does not work well.
     foreach($groups['values'] as $group) {
-      if (!empty($group['group_type']) && in_array(1, $group['group_type'])){
+      if (!empty($group['group_type']) && in_array(ACL_GROUP_TYPE, $group['group_type'])){
         $groupOpt[$group['id']] = $group['title'];
       }
     };
 
+    // Add Select widget for mail approval groups to the option form.
     $form->add('select', 'mail_approvers', ts('Approval Groups'), $groupOpt, FALSE, array(
         'multiple' => 'multiple',
         'class' => 'crm-select2',
@@ -172,6 +174,7 @@ function mailapprovers_civicrm_buildForm($formName, &$form) {
 
     $form->setDefaults($defaults);
 
+    // Add an additional template region to insert the field into the form.
     $templatePath = realpath(dirname(__FILE__).'/templates');
 
     CRM_Core_Region::instance('page-body')->add(array('template' => $templatePath . '/CRM/Mailapprovers/Form/Option.tpl'));
@@ -180,6 +183,8 @@ function mailapprovers_civicrm_buildForm($formName, &$form) {
 
 /**
  * Implements hook_civicrm_postProcess().
+ *
+ * Saves the mail_approvers settings from the Options form.
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postProcess
  */
