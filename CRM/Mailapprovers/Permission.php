@@ -65,7 +65,13 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
 
       // Loop through all possible approver lists and return TRUE as soon as one matches or the list is empty.
       foreach($emails['values'] as $e) {
-        if(empty($approvers[$e['value']]) || !empty(array_intersect($approvers[$e['value']], $groups))) {
+        if(empty($approvers[$e['value']])){
+          return TRUE;
+        }
+
+        $intersect = array_intersect($approvers[$e['value']], $groups);
+
+        if(!empty($intersect)) {
           return TRUE;
         }
       }
