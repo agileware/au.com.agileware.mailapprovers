@@ -27,11 +27,22 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
       return TRUE;
     }
 
-    // Mailing ID - must exist in request.
-    $mid = CRM_Utils_Request::retrieve('mid', 'Positive');
+    // Get Mailing ID from form.
+    $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String');
+    $mid = 0;
+
+    if($qfKey) {
+      $vars = array();
+      CRM_Core_Session::singleton()->getVars($vars, 'CRM_Mailing_Form_Approve_' . $qfKey);
+      $mid = $vars['mid'];
+    }
+    else {
+      // Mailing ID - must exist in request.
+      $mid = CRM_Utils_Request::retrieve('mid', 'Positive');
+    }
 
     if (!$mid) {
-      return FALSE;
+        return FALSE;
     }
 
     try {
