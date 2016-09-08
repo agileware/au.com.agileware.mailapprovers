@@ -79,4 +79,6 @@ Usage
 Author
 ------
 
-Agileware <projects@agileware.com.au>
+[Agileware](https://agileware.com.au) <projects@agileware.com.au>
+
+Development of this extension was sponsored by [Australian Greens](https://greens.org.au)
