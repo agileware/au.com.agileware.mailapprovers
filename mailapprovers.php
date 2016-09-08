@@ -162,7 +162,7 @@ function mailapprovers_civicrm_buildForm($formName, &$form) {
         'placeholder' => ts('Unrestricted'),
       ));
 
-    $approvers = Civi::settings()->get('mail_approvers');
+    $approvers = method_exists('Civi', 'settings') ? Civi::settings()->get('mail_approvers') : CRM_Core_BAO_Setting::getItem('mailing', 'mail_approvers');
 
     $default_approvers = array();
     if (isset($approvers[$form->_defaultValues['value']])) {
@@ -191,9 +191,14 @@ function mailapprovers_civicrm_postProcess($formName, &$form) {
   $params = $form->exportValues();
 
   if('CRM_Admin_Form_Options' == $formName && isset($params['mail_approvers'])) {
-    $approvers = Civi::settings()->get('mail_approvers');
+    $approvers =  method_exists('Civi', 'settings') ? Civi::settings()->get('mail_approvers') : CRM_Core_BAO_Setting::getItem('mailing', 'mail_approvers');
     $approvers[$params['value']] = $params['mail_approvers'];
-    Civi::settings()->set('mail_approvers', $approvers);
+    if(method_exists('Civi', 'settings')) {
+      Civi::settings()->set('mail_approvers', $approvers);
+    }
+    else {
+      CRM_Core_BAO_Setting::setItem($approvers, 'mailing', 'mail_approvers');
+    }
   }
 }
 

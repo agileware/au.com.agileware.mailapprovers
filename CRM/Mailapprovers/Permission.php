@@ -66,7 +66,7 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
                 ));
 
       // Get the list of approvers.
-      $approvers = Civi::settings()->get('mail_approvers');
+      $approvers = method_exists('Civi', 'settings') ? Civi::settings()->get('mail_approvers') : CRM_Core_BAO_Setting::getItem('mailing', 'mail_approvers');
 
       // Get logged in user's groups as an array
       $groups = civicrm_api3('Contact', 'getvalue', array(
