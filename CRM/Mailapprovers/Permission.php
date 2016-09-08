@@ -69,17 +69,13 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
       $approvers = method_exists('Civi', 'settings') ? Civi::settings()->get('mail_approvers') : CRM_Core_BAO_Setting::getItem('mailing', 'mail_approvers');
 
       // Get logged in user's groups as an array
-      $groups = civicrm_api3('Contact', 'getvalue', array(
-                  'id' => CRM_Core_Session::singleton()->getLoggedInContactID(),
-                  'return' => 'groups'
+      $groups = civicrm_api3('GroupContact', 'get', array(
+                  'contact_id' => CRM_Core_Session::singleton()->getLoggedInContactID(),
+                  'sequential' => 1,
+                  'return' => 'group_id'
                 ));
 
-      if($groups) {
-        $groups = explode(',', $groups);
-      }
-      else {
-        $groups = array();
-      }
+      $groups = array_map(function($v) { return $v['group_id']; }, $groups['values']);
 
       // Assume at this point that the email can be approved.
       $approve = TRUE;
