@@ -34,7 +34,8 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
     if($qfKey) {
       $vars = array();
       CRM_Core_Session::singleton()->getVars($vars, 'CRM_Mailing_Form_Approve_' . $qfKey);
-      $mid = $vars['mid'];
+      // Some forms use mailing_id instead
+      $mid = !empty($vars['mid'])? $vars['mid'] : $vars['mailing_id'];
     }
     else {
       // Mailing ID - must exist in request.
@@ -42,14 +43,20 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
     }
 
     if (!$mid) {
-        return FALSE;
+      return FALSE;
     }
 
+    return self::canMail($mid);
+  }
+
+  public static function canMail($mid) {
+    $approve = FALSE;
     try {
+
       // Get the from_email address of the email in question
       $mailing = civicrm_api('Mailing', 'getsingle', array('version' => '3', 'id' => $mid, 'return' => 'from_email'));
 
-      // Speculate on the "From Email" ID based on the address.  This may return multiple results.
+      // Mailing does not store the "From Email" ID - speculate based on the address.  This may return multiple results.
       $emails = civicrm_api('OptionValue', 'get', array(
                   'version' => '3',
                   'option_group_id' => 'from_email_address',
@@ -74,21 +81,29 @@ class CRM_Mailapprovers_Permission extends CRM_Core_Permission_Temp {
         $groups = array();
       }
 
-      // Loop through all possible approver lists and return TRUE as soon as one matches or the list is empty.
+      // Assume at this point that the email can be approved.
+      $approve = TRUE;
+
+      // Loop through all possible approver lists.
       foreach($emails['values'] as $e) {
         if(empty($approvers[$e['value']])){
-          return TRUE;
+          continue;
         }
+
+        // Restrictions found
+        $approve = FALSE;
 
         $intersect = array_intersect($approvers[$e['value']], $groups);
 
         if(!empty($intersect)) {
-          return TRUE;
+          // User is in the approvers list, confirm and finish processing.
+          $approve = TRUE;
+          break;
         }
       }
     }
     catch (Exception $e) { }
 
-    return FALSE;
+    return $approve;
   }
 }
