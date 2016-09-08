@@ -198,6 +198,41 @@ function mailapprovers_civicrm_postProcess($formName, &$form) {
 }
 
 /**
+ * Implements hook_civicrm_pre().
+ *
+ * Automatically approves Mailing when applicable.
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_pre
+ */
+function mailapprovers_civicrm_pre($op, $objectName, $objectId, &$params) {
+  if(($objectName != 'Mailing') || ($op == 'view')){
+    return;
+  }
+
+  $approved = CRM_Core_OptionGroup::getValue('mail_approval_status', 'Approved', 'name');
+  $rejected = CRM_Core_OptionGroup::getValue('mail_approval_status', 'Rejected', 'name');
+  $status_none = CRM_Core_OptionGroup::getValue('mail_approval_status', 'None', 'name');
+
+  // Only approve if there's a valid schedule date.
+  // Scheduling a Mailing does not clear its "Rejected" status, so only check to make sure it's not already approved (or you'll get an infinite loop).
+  if ($params['scheduled_date'] && $params['scheduled_date'] != 'null' && $params['approval_status_id'] != $approved) {
+    if (CRM_Mailapprovers_Permission::canMail($objectId)) {
+      $params['approval_status_id'] = $approved;
+      $params['approver_id'] = CRM_Core_Session::singleton()->getLoggedInContactID();
+      $params['approval_date'] = date('YmdHis');
+      $params['approval_note'] = ts('Mailing automatically approved by ACL membership.');
+    }
+    elseif(!CRM_Core_Permission::check('approve mailings') && !CRM_Core_Permission::check('access CiviMail')) {
+      // Force none status if we can't approve.
+      $params['approval_status_id'] = NULL;
+      $params['approval_date'] = NULL;
+      $params['approver_id'] = NULL;
+      CRM_Core_Session::setStatus(ts('Mailing has been submitted for approval.'));
+    }
+  }
+}
+
+/**
  * Functions below this ship commented out. Uncomment as required.
  *
 
