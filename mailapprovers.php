@@ -12,7 +12,12 @@ define('ACL_GROUP_TYPE', 1);
 function mailapprovers_civicrm_config(&$config) {
   _mailapprovers_civix_civicrm_config($config);
 
-  $arg = explode('/', $_GET[$config->userFrameworkURLVar]);
+  if (!empty($_GET[$config->userFrameworkURLVar])) {
+    $arg = explode('/', $_GET[$config->userFrameworkURLVar]);
+  }
+  else {
+    $arg = array();
+  }
 
   if (isset($arg[1]) && ('mailing' == $arg[1])) {
     if (!(CRM_Core_Config::singleton()->userPermissionTemp)) {
