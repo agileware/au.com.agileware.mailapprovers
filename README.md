@@ -76,9 +76,18 @@ Usage
     mailings" permissions will have all Mailings automatically approved, and
     will be able to approve or reject any Mailing.
 
-Author
+
+About the Authors
 ------
 
-[Agileware](https://agileware.com.au) <projects@agileware.com.au>
+This CiviCRM extension was developed by [Agileware](https://agileware.com.au) with sponsorship by the [Australian Greens](https://greens.org.au)
 
-Development of this extension was sponsored by [Australian Greens](https://greens.org.au)
+[Agileware](https://agileware.com.au) provide a range of CiviCRM services including:
+ - CiviCRM migration
+ - CiviCRM integration
+ - CiviCRM extension development
+ - CiviCRM support
+ - CiviCRM hosting
+ - CiviCRM remote training services.
+
+Support your CiviCRM developers. [Contact Agileware](https://agileware.com.au/contact) today!
